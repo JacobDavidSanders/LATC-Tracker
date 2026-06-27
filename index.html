@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="LATC Tracker">
+<title>LATC Equipment Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#111;background:#f3f4f6;min-height:100vh}
+.app{max-width:700px;margin:0 auto;padding:1rem}
+.header{background:#185FA5;color:#fff;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:12px}
+.header h1{font-size:16px;font-weight:600;margin:0}
+.header p{font-size:12px;opacity:0.8;margin:2px 0 0}
+.section{background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.sec-title{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:13px;color:#6b7280}
+input[type=text],input[type=date],input[type=password],input[type=url],select,textarea{width:100%;font-size:14px;padding:8px 10px;border:0.5px solid #d1d5db;border-radius:8px;background:#f9fafb;color:#111;outline:none;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:#185FA5;box-shadow:0 0 0 2px rgba(24,95,165,0.1);background:#fff}
+textarea{resize:vertical;min-height:56px}
+.btn{border-radius:8px;padding:9px 18px;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid #d1d5db;background:#f9fafb;color:#111;font-family:inherit;transition:opacity 0.15s}
+.btn:hover{opacity:0.8}
+.btn-primary{background:#185FA5;color:#fff;border-color:#185FA5}
+.btn-primary:disabled{background:#B5D4F4;border-color:#B5D4F4;cursor:not-allowed}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-danger{color:#E53E3E;border-color:#E53E3E}
+.tab-row{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{position:relative;padding:7px 14px;border-radius:8px;border:0.5px solid #d1d5db;font-size:13px;cursor:pointer;background:#fff;color:#6b7280;font-family:inherit;transition:all 0.15s}
+.tab:hover{background:#f3f4f6}
+.tab.active{background:#185FA5;border-color:#185FA5;color:#fff}
+.badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:#E53E3E;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #f3f4f6;padding:0 3px}
+.badge.hidden{display:none}
+.hidden{display:none}
+.loc-badge{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap}
+.from-badge{background:#FAEEDA;color:#633806}
+.to-badge{background:#E1F5EE;color:#085041}
+.cargo-box{background:#f9fafb;border:0.5px solid #e5e7eb;border-radius:8px;padding:10px 14px;margin-top:10px}
+.cargo-title{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
+.cargo-item{font-size:13px;padding:4px 0;border-bottom:0.5px solid #e5e7eb;display:flex;align-items:center;gap:8px;color:#111}
+.cargo-item:last-child{border-bottom:none}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.equip-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+@media(max-width:480px){.equip-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
+.equip-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;border:0.5px solid #e5e7eb;cursor:pointer;background:#f9fafb;user-select:none;transition:all 0.12s}
+.equip-item:hover{border-color:#d1d5db;background:#f3f4f6}
+.equip-item.selected{background:#E6F1FB;border-color:#85B7EB;color:#0C447C}
+.equip-check{width:16px;height:16px;border-radius:4px;border:1.5px solid #d1d5db;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.12s}
+.equip-item.selected .equip-check{background:#185FA5;border-color:#185FA5}
+.tick{display:none;width:9px;height:6px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.equip-item.selected .tick{display:block}
+.equip-thumb{width:34px;height:34px;border-radius:5px;object-fit:cover;border:0.5px solid #e5e7eb;flex-shrink:0}
+.equip-thumb-ph{width:34px;height:34px;border-radius:5px;border:0.5px dashed #d1d5db;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#fff;color:#9ca3af;font-size:16px}
+.equip-label{flex:1;min-width:0;font-size:12px;line-height:1.4;color:inherit}
+.alert-box{background:#FFFBEB;border:0.5px solid #F59E0B;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+.alert-row{background:#fff;border:0.5px solid #FCD34D;border-radius:8px;padding:8px 12px;margin-bottom:5px}
+.alert-row:last-child{margin-bottom:0}
+.status-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #e5e7eb}
+.status-row:last-child{border-bottom:none}
+.log-card{background:#f9fafb;border:0.5px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px}
+.spinner-dark{display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,0.12);border-top-color:#185FA5;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sync-bar{font-size:12px;color:#6b7280;text-align:right;margin-bottom:6px;min-height:16px}
+.gate{display:flex;flex-direction:column;align-items:center;padding:3rem 1rem}
+.gate-card{background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:1.5rem;width:100%;max-width:320px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.del-btn{font-size:11px;color:#6b7280;background:none;border:0.5px solid #e5e7eb;border-radius:6px;padding:3px 8px;cursor:pointer;margin-top:8px;font-family:inherit}
+.del-btn:hover{color:#E53E3E;border-color:#E53E3E}
+.notif-banner{background:#EFF6FF;border:0.5px solid #93C5FD;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px}
+.notif-grant{background:#F0FDF4;border:0.5px solid #86EFAC;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.new-trip-banner{background:#EFF6FF;border:0.5px solid #93C5FD;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px}
+input[type=file]{display:none}
+.photo-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid #e5e7eb}
+.photo-row:last-child{border-bottom:none}
+.setup-banner{background:#FFF7ED;border:0.5px solid #FB923C;border-radius:10px;padding:12px 16px;margin-bottom:1rem}
+.step{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+.step:last-child{margin-bottom:0}
+.step-num{width:22px;height:22px;border-radius:50%;background:#185FA5;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;color:#111;line-height:1.5}
+.step-text a{color:#185FA5;text-decoration:underline}
+.divider{border:none;border-top:0.5px solid #e5e7eb;margin:12px 0}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <div style="font-size:32px;line-height:1">🚐</div>
+  <div>
+    <h1>LATC Equipment Tracker</h1>
+    <p>Life at the Centre Nottingham — shared equipment log</p>
+  </div>
+</div>
+
+<!-- SETUP BANNER (shown until JSONBin is configured) -->
+<div id="setup-banner" class="setup-banner hidden">
+  <div style="font-size:13px;font-weight:600;color:#9A3412;margin-bottom:10px">⚙️ Setup required — connect JSONBin to enable shared storage</div>
+  <div class="step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> and create a free account</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-text">Click <strong>API Keys</strong> in the top menu → <strong>Create Access Key</strong> → copy it</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-text">Go to <strong>Settings</strong> tab below → paste your key → click <strong>Save &amp; connect</strong></div></div>
+</div>
+
+<!-- NOTIFICATION GRANT -->
+<div id="notif-grant-bar" class="notif-grant hidden">
+  <span style="font-size:20px">🔔</span>
+  <div style="flex:1">
+    <div style="font-size:13px;font-weight:500;color:#14532D">Enable notifications</div>
+    <div style="font-size:12px;color:#166534;margin-top:2px">Get notified when anyone logs a trip — works even when the tab is in the background.</div>
+  </div>
+  <button class="btn btn-sm btn-primary" onclick="requestNotifPermission()">Allow</button>
+  <button class="btn btn-sm" onclick="dismissNotifBanner()">Dismiss</button>
+</div>
+
+<!-- NEW TRIP BANNER -->
+<div id="new-trip-banner" class="new-trip-banner hidden">
+  <span style="font-size:18px">🚐</span>
+  <div style="flex:1;font-size:13px;color:#1E40AF" id="new-trip-banner-text"></div>
+  <span style="cursor:pointer;color:#3B82F6;font-size:18px;line-height:1;padding:0 2px" onclick="document.getElementById('new-trip-banner').classList.add('hidden')">✕</span>
+</div>
+
+<!-- TABS -->
+<div class="tab-row">
+  <button class="tab active" id="tab-btn-log" onclick="switchTab('log')">📋 Log trip</button>
+  <button class="tab" id="tab-btn-trips" onclick="switchTab('trips')">🚐 All trips<span class="badge hidden" id="badge-trips">!</span></button>
+  <button class="tab" id="tab-btn-away" onclick="switchTab('away')">⚠️ Away<span class="badge hidden" id="badge-away"></span></button>
+  <button class="tab" id="tab-btn-photos" onclick="switchTab('photos')">📷 Photos</button>
+  <button class="tab" id="tab-btn-settings" onclick="switchTab('settings')">⚙️ Settings</button>
+</div>
+
+<!-- LOG TRIP -->
+<div id="tab-log">
+  <div class="section">
+    <div class="sec-title">Trip details</div>
+    <div class="form-row">
+      <div class="fg"><label>Your name</label><input type="text" id="f-name" placeholder="e.g. Jacob"></div>
+      <div class="fg"><label>Date</label><input type="date" id="f-date"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Pickup location</label>
+        <select id="f-pickup" onchange="onLocChange()">
+          <option value="">Select location</option>
+          <option>PSCI</option><option>Ayo House</option><option>Pope Building</option><option>Storage Unit</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label>Dropoff location</label>
+        <select id="f-dropoff" onchange="onLocChange()">
+          <option value="">Select location</option>
+          <option>PSCI</option><option>Ayo House</option><option>Pope Building</option><option>Storage Unit</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div id="row-pu-other" class="hidden" style="margin-bottom:10px">
+      <div class="fg"><label>Specify pickup</label><input type="text" id="f-pickup-other" placeholder="Enter location" oninput="updatePreview()"></div>
+    </div>
+    <div id="row-do-other" class="hidden" style="margin-bottom:10px">
+      <div class="fg"><label>Specify dropoff</label><input type="text" id="f-dropoff-other" placeholder="Enter location" oninput="updatePreview()"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Equipment taken</div>
+    <div id="equip-loading" style="font-size:13px;color:#6b7280;padding:8px 0"><span class="spinner-dark"></span> Loading...</div>
+    <div class="equip-grid hidden" id="equip-grid"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Comments</div>
+    <textarea id="f-comments" placeholder="Any notes about this trip..."></textarea>
+  </div>
+
+  <div id="van-preview" class="hidden section">
+    <div class="sec-title">Trip preview</div>
+    <div id="van-preview-inner"></div>
+  </div>
+
+  <div class="sync-bar" id="submit-status"></div>
+  <button class="btn btn-primary" id="submit-btn" onclick="submitTrip()" style="width:100%;padding:12px">Log trip</button>
+</div>
+
+<!-- ALL TRIPS -->
+<div id="tab-trips" class="hidden">
+  <div id="gate-trips">
+    <div class="gate"><div class="gate-card">
+      <div style="font-size:15px;font-weight:600;margin-bottom:4px">🔒 Protected area</div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:16px">Enter the admin password to view all trips.</div>
+      <div class="fg"><label>Password</label><input type="password" id="pw-trips" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPw('trips')"></div>
+      <div id="err-trips" style="font-size:13px;color:#E53E3E;margin-top:8px;min-height:18px"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="checkPw('trips')">Unlock</button>
+    </div></div>
+  </div>
+  <div id="content-trips" class="hidden">
+    <div class="sync-bar" id="trips-sync-bar"></div>
+    <div class="section">
+      <div class="sec-title">All trips</div>
+      <div id="trips-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AWAY TRACKER -->
+<div id="tab-away" class="hidden">
+  <div id="gate-away">
+    <div class="gate"><div class="gate-card">
+      <div style="font-size:15px;font-weight:600;margin-bottom:4px">🔒 Protected area</div>
+      <div style="font-size:13px;color:#6b7280;margin-bottom:16px">Enter the admin password to view the away tracker.</div>
+      <div class="fg"><label>Password</label><input type="password" id="pw-away" placeholder="Enter password" onkeydown="if(event.key==='Enter')checkPw('away')"></div>
+      <div id="err-away" style="font-size:13px;color:#E53E3E;margin-top:8px;min-height:18px"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="checkPw('away')">Unlock</button>
+    </div></div>
+  </div>
+  <div id="content-away" class="hidden">
+    <div class="sync-bar" id="away-sync-bar"></div>
+    <div id="away-alerts"></div>
+    <div class="section">
+      <div class="sec-title">Equipment location status</div>
+      <div id="away-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PHOTOS -->
+<div id="tab-photos" class="hidden">
+  <div class="section">
+    <div class="sec-title">Equipment photos</div>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:14px;line-height:1.6">Photos sync to all users. They appear next to items in the checklist and cargo list.</p>
+    <div id="photos-loading" style="font-size:13px;color:#6b7280;padding:8px 0"><span class="spinner-dark"></span> Loading shared photos...</div>
+    <div id="photos-grid" class="hidden"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="tab-settings" class="hidden">
+
+  <div class="section">
+    <div class="sec-title">JSONBin — shared storage</div>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:12px;line-height:1.6">
+      JSONBin stores all trips and photos so every user sees the same data. Free account at
+      <a href="https://jsonbin.io" target="_blank" style="color:#185FA5">jsonbin.io</a>.
+    </p>
+    <div class="fg" style="margin-bottom:10px">
+      <label>JSONBin API Key</label>
+      <input type="text" id="s-jsonbin-key" placeholder="$2b$10$...">
+    </div>
+    <button class="btn btn-primary" onclick="saveJsonBinKey()" style="width:auto;padding:9px 24px">Save &amp; connect</button>
+    <div id="jsonbin-msg" style="font-size:13px;margin-top:8px;min-height:16px"></div>
+    <div id="jsonbin-status" style="font-size:12px;color:#6b7280;margin-top:6px;min-height:16px"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Notifications</div>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:12px;line-height:1.6">
+      Get a browser notification whenever someone logs a trip. On iPhone/iPad, first add this page to your home screen via the Share button in Safari.
+    </p>
+    <div id="notif-status-box" style="font-size:13px;margin-bottom:12px"></div>
+    <button class="btn btn-primary" id="notif-enable-btn" onclick="requestNotifPermission()" style="width:auto;padding:9px 24px">Enable notifications</button>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Admin password</div>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:12px;line-height:1.6">
+      Required to view All trips and Away tracker. Default is <strong>latc2024</strong> — change this before sharing.
+    </p>
+    <div class="fg" style="margin-bottom:10px"><label>New password</label><input type="password" id="s-pw" placeholder="Enter a password"></div>
+    <div class="fg" style="margin-bottom:14px"><label>Confirm password</label><input type="password" id="s-pw2" placeholder="Confirm password"></div>
+    <button class="btn btn-primary" onclick="savePassword()" style="width:auto;padding:9px 24px">Save password</button>
+    <div id="pw-msg" style="font-size:13px;margin-top:8px;min-height:16px"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Home location</div>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:10px">Equipment not at this location is flagged as away.</p>
+    <select id="s-home" style="width:auto">
+      <option>Storage Unit</option><option>PSCI</option><option>Ayo House</option><option>Pope Building</option>
+    </select>
+    <div style="margin-top:10px">
+      <button class="btn btn-primary" onclick="saveHome()" style="width:auto;padding:9px 24px">Save</button>
+    </div>
+    <div id="home-msg" style="font-size:13px;margin-top:8px;min-height:16px"></div>
+  </div>
+
+</div>
+</div><!-- end .app -->
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────────────────────────────────────
+
+const EQUIPMENT = [
+  '2x Alto TS415 speakers','2x Alto TS215 speakers','Individual speaker for bass',
+  'Keyboard','Keyboard stand','Drums','Lights','Mixer','Pulpit',
+  'Extensions & power cables','XLR cables','Instrumentalist cables with DIs',
+  'Microphone bag','TGX banners','GES banners','Speaker stands',
+  'Microphone receiver box','Floor wedge'
+];
+
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────────────────
+
+let trips        = [];
+let sharedPhotos = {};
+let unlocked     = { trips: false, away: false };
+let lastKnownTripCount = parseInt(localStorage.getItem('latc_last_count') || '0');
+let pollTimer    = null;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCAL STORAGE HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getApiKey()   { return localStorage.getItem('latc_jsonbin_key') || ''; }
+function getTripsBin() { return localStorage.getItem('latc_trips_bin') || ''; }
+function getPhotosBin(){ return localStorage.getItem('latc_photos_bin') || ''; }
+function getPassword() { return localStorage.getItem('latc_pw') || 'latc2024'; }
+function getHome()     { return localStorage.getItem('latc_home') || 'Storage Unit'; }
+
+function isConfigured() { return !!(getApiKey() && getTripsBin() && getPhotosBin()); }
+
+function setMsg(id, text, ok) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.style.color = ok ? '#065F46' : '#B91C1C';
+  el.textContent = text;
+  if (ok) setTimeout(() => { el.textContent = ''; }, 4000);
+}
+
+function fmtDate(d) {
+  return new Date(d + 'T12:00:00').toLocaleDateString('en-GB', {
+    weekday:'short', day:'numeric', month:'short', year:'numeric'
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// JSONBIN API
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function jbGet(binId) {
+  const res = await fetch(`${JSONBIN_BASE}/${binId}/latest`, {
+    headers: { 'X-Master-Key': getApiKey() }
+  });
+  if (!res.ok) throw new Error('JSONBin GET failed: ' + res.status);
+  const data = await res.json();
+  return data.record;
+}
+
+async function jbSet(binId, record) {
+  const res = await fetch(`${JSONBIN_BASE}/${binId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': getApiKey() },
+    body: JSON.stringify(record)
+  });
+  if (!res.ok) throw new Error('JSONBin PUT failed: ' + res.status);
+  return res.json();
+}
+
+async function jbCreate(name, initialData) {
+  const res = await fetch(JSONBIN_BASE, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': getApiKey(),
+      'X-Bin-Name': name,
+      'X-Bin-Private': 'true'
+    },
+    body: JSON.stringify(initialData)
+  });
+  if (!res.ok) throw new Error('JSONBin CREATE failed: ' + res.status);
+  const data = await res.json();
+  return data.metadata.id;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SETUP — create bins automatically on first save of API key
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function saveJsonBinKey() {
+  const key = document.getElementById('s-jsonbin-key').value.trim();
+  if (!key) { setMsg('jsonbin-msg', 'Please enter your API key.', false); return; }
+
+  const btn = document.querySelector('#tab-settings .btn-primary');
+  const statusEl = document.getElementById('jsonbin-status');
+  statusEl.textContent = 'Connecting...';
+  setMsg('jsonbin-msg', '', true);
+
+  try {
+    localStorage.setItem('latc_jsonbin_key', key);
+
+    let tripsBin  = getTripsBin();
+    let photosBin = getPhotosBin();
+
+    if (!tripsBin) {
+      statusEl.textContent = 'Creating trips storage...';
+      tripsBin = await jbCreate('latc-trips', { trips: [] });
+      localStorage.setItem('latc_trips_bin', tripsBin);
+    }
+    if (!photosBin) {
+      statusEl.textContent = 'Creating photos storage...';
+      photosBin = await jbCreate('latc-photos', { photos: {} });
+      localStorage.setItem('latc_photos_bin', photosBin);
+    }
+
+    statusEl.textContent = '✅ Connected — Trips bin: ' + tripsBin + ' · Photos bin: ' + photosBin;
+    setMsg('jsonbin-msg', 'Connected successfully! Shared storage is active.', true);
+    document.getElementById('setup-banner').classList.add('hidden');
+
+    // load data now
+    await loadAllPhotos();
+    buildEquipGrid();
+    document.getElementById('equip-loading').classList.add('hidden');
+    document.getElementById('equip-grid').classList.remove('hidden');
+    startPolling();
+    updateAwayBadge();
+
+  } catch (e) {
+    localStorage.removeItem('latc_jsonbin_key');
+    statusEl.textContent = '';
+    setMsg('jsonbin-msg', 'Connection failed. Check your API key and try again.', false);
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TRIPS — load / save
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function loadTrips() {
+  if (!isConfigured()) return;
+  const record = await jbGet(getTripsBin());
+  trips = (record.trips || []).sort((a, b) => {
+    if (b.date !== a.date) return b.date.localeCompare(a.date);
+    return parseInt(b.id) - parseInt(a.id);
+  });
+}
+
+async function saveTrips() {
+  if (!isConfigured()) return;
+  await jbSet(getTripsBin(), { trips });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PHOTOS — load / save
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function loadAllPhotos() {
+  if (!isConfigured()) return;
+  try {
+    const record = await jbGet(getPhotosBin());
+    sharedPhotos = record.photos || {};
+  } catch (e) { sharedPhotos = {}; }
+}
+
+async function savePhotos() {
+  if (!isConfigured()) return;
+  await jbSet(getPhotosBin(), { photos: sharedPhotos });
+}
+
+function compressImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = e => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const MAX = 300;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else       { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.65));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POLLING — check for new trips every 30s
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function pollForNewTrips() {
+  if (!isConfigured()) return;
+  try {
+    const record = await jbGet(getTripsBin());
+    const count  = (record.trips || []).length;
+    if (lastKnownTripCount === 0) {
+      lastKnownTripCount = count;
+      localStorage.setItem('latc_last_count', count);
+      return;
+    }
+    if (count > lastKnownTripCount) {
+      const newest = (record.trips || []).sort((a,b) => parseInt(b.id)-parseInt(a.id))[0];
+      lastKnownTripCount = count;
+      localStorage.setItem('latc_last_count', count);
+      if (newest) {
+        fireNotification(newest);
+        showNewTripBanner(newest);
+        document.getElementById('badge-trips').classList.remove('hidden');
+        updateAwayBadge();
+      }
+    }
+  } catch (e) {}
+}
+
+function startPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(pollForNewTrips, 30000);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────────────────────────────────────────
+
+function notifSupported() { return 'Notification' in window; }
+function notifPermission(){ return notifSupported() ? Notification.permission : 'denied'; }
+
+function showNotifGrantBar() {
+  if (!notifSupported()) return;
+  if (notifPermission() === 'default' && !localStorage.getItem('latc_notif_dismissed')) {
+    document.getElementById('notif-grant-bar').classList.remove('hidden');
+  }
+}
+
+async function requestNotifPermission() {
+  if (!notifSupported()) { updateNotifStatusBox(); return; }
+  const result = await Notification.requestPermission();
+  document.getElementById('notif-grant-bar').classList.add('hidden');
+  updateNotifStatusBox();
+  if (result === 'granted') {
+    new Notification('LATC Equipment Tracker', {
+      body: "You'll be notified whenever a trip is logged."
+    });
+  }
+}
+
+function dismissNotifBanner() {
+  localStorage.setItem('latc_notif_dismissed', '1');
+  document.getElementById('notif-grant-bar').classList.add('hidden');
+}
+
+function updateNotifStatusBox() {
+  const box = document.getElementById('notif-status-box');
+  const btn = document.getElementById('notif-enable-btn');
+  if (!notifSupported()) {
+    box.innerHTML = '⚠️ Notifications not supported in this browser.';
+    box.style.color = '#B91C1C';
+    if (btn) btn.classList.add('hidden');
+    return;
+  }
+  const p = notifPermission();
+  if (p === 'granted') {
+    box.innerHTML = '✅ Notifications are enabled.';
+    box.style.color = '#065F46';
+    if (btn) btn.classList.add('hidden');
+  } else if (p === 'denied') {
+    box.innerHTML = '🚫 Notifications are blocked. Enable them in your browser/device settings.';
+    box.style.color = '#B91C1C';
+    if (btn) btn.classList.add('hidden');
+  } else {
+    box.innerHTML = '🔔 Click below to receive notifications for new trips.';
+    box.style.color = '#6b7280';
+    if (btn) btn.classList.remove('hidden');
+  }
+}
+
+function fireNotification(trip) {
+  if (notifPermission() !== 'granted') return;
+  const preview = trip.items.slice(0,3).join(', ') + (trip.items.length > 3 ? ` +${trip.items.length-3} more` : '');
+  try {
+    new Notification(`🚐 ${trip.name} logged a trip`, {
+      body: `${trip.pickup} → ${trip.dropoff} on ${fmtDate(trip.date)}\n${preview}`,
+      tag: 'latc-' + trip.id
+    });
+  } catch(e) {}
+}
+
+function showNewTripBanner(trip) {
+  document.getElementById('new-trip-banner-text').textContent =
+    `New trip by ${trip.name} on ${fmtDate(trip.date)}: ${trip.pickup} → ${trip.dropoff}`;
+  document.getElementById('new-trip-banner').classList.remove('hidden');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AWAY BADGE
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function updateAwayBadge() {
+  if (!isConfigured()) return;
+  try {
+    await loadTrips();
+    const home  = getHome();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const latest = {};
+    [...trips].sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{
+      t.items.forEach(item=>{ latest[item]=t; });
+    });
+    let count = 0;
+    EQUIPMENT.forEach(item=>{
+      const t = latest[item];
+      if (!t) return;
+      const diff = Math.floor((today - new Date(t.date+'T12:00:00'))/86400000);
+      if (t.dropoff !== home && diff > 1) count++;
+    });
+    const badge = document.getElementById('badge-away');
+    if (count > 0) { badge.textContent = count; badge.classList.remove('hidden'); }
+    else badge.classList.add('hidden');
+  } catch(e) {}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EQUIPMENT GRID
+// ─────────────────────────────────────────────────────────────────────────────
+
+function buildEquipGrid() {
+  document.getElementById('equip-grid').innerHTML = EQUIPMENT.map((e,i) => {
+    const photo = sharedPhotos[i];
+    return `<div class="equip-item" id="eq-${i}" onclick="toggleEq(${i})">
+      <div class="equip-check"><div class="tick"></div></div>
+      ${photo
+        ? `<img src="${photo}" class="equip-thumb" alt="${e}">`
+        : `<div class="equip-thumb-ph">📷</div>`}
+      <span class="equip-label">${e}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleEq(i) {
+  document.getElementById('eq-'+i).classList.toggle('selected');
+  updatePreview();
+}
+
+function getSelected() {
+  return EQUIPMENT.filter((_,i)=>document.getElementById('eq-'+i)?.classList.contains('selected'));
+}
+
+function getSelectedWithPhotos() {
+  return EQUIPMENT
+    .map((e,i)=>({name:e, photo:sharedPhotos[i]||null}))
+    .filter((_,i)=>document.getElementById('eq-'+i)?.classList.contains('selected'));
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION HELPERS
+// ─────────────────────────────────────────────────────────────────────────────
+
+function getPickup() {
+  const v = document.getElementById('f-pickup').value;
+  return v==='Other' ? (document.getElementById('f-pickup-other').value.trim()||'Other') : v;
+}
+function getDropoff() {
+  const v = document.getElementById('f-dropoff').value;
+  return v==='Other' ? (document.getElementById('f-dropoff-other').value.trim()||'Other') : v;
+}
+function onLocChange() {
+  document.getElementById('row-pu-other').classList.toggle('hidden', document.getElementById('f-pickup').value!=='Other');
+  document.getElementById('row-do-other').classList.toggle('hidden', document.getElementById('f-dropoff').value!=='Other');
+  updatePreview();
+}
+document.getElementById('f-name').addEventListener('input', updatePreview);
+document.getElementById('f-date').addEventListener('change', updatePreview);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// VAN PREVIEW
+// ─────────────────────────────────────────────────────────────────────────────
+
+function updatePreview() {
+  const from=getPickup(), to=getDropoff(), items=getSelectedWithPhotos();
+  const preview=document.getElementById('van-preview');
+  if (!from||!to||items.length===0){preview.classList.add('hidden');return;}
+  preview.classList.remove('hidden');
+  document.getElementById('van-preview-inner').innerHTML = buildVanHTML(
+    document.getElementById('f-name').value.trim(), from, to, items,
+    document.getElementById('f-date').value
+  );
+}
+
+function buildVanHTML(name, from, to, itemsWP, date) {
+  const dateStr = date ? fmtDate(date) : '';
+  return `
+    <div style="font-size:14px;font-weight:600;text-align:center;margin-bottom:8px">
+      ${name ? name+"'s trip" : 'Trip'}${dateStr?' — '+dateStr:''}
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:12px">
+      <span class="loc-badge from-badge">📍 ${from}</span>
+      <span style="color:#9ca3af;font-size:18px">→</span>
+      <span class="loc-badge to-badge">📍 ${to}</span>
+    </div>
+    <svg viewBox="0 0 480 190" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:460px;display:block;margin:0 auto" aria-hidden="true">
+      <rect x="10" y="70" width="340" height="100" rx="10" fill="#B5D4F4" stroke="#185FA5" stroke-width="1.5"/>
+      <rect x="10" y="70" width="340" height="38" rx="10" fill="#85B7EB" stroke="#185FA5" stroke-width="1.5"/>
+      <rect x="350" y="90" width="115" height="80" rx="10" fill="#B5D4F4" stroke="#185FA5" stroke-width="1.5"/>
+      <rect x="360" y="98" width="62" height="38" rx="5" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+      <rect x="428" y="105" width="28" height="26" rx="4" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+      <rect x="20" y="77" width="118" height="50" rx="6" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+      <rect x="148" y="77" width="48" height="24" rx="4" fill="#E6F1FB" stroke="#185FA5" stroke-width="1"/>
+      <circle cx="78" cy="178" r="18" fill="#2C2C2A" stroke="#444441" stroke-width="2"/>
+      <circle cx="78" cy="178" r="8" fill="#888780"/>
+      <circle cx="295" cy="178" r="18" fill="#2C2C2A" stroke="#444441" stroke-width="2"/>
+      <circle cx="295" cy="178" r="8" fill="#888780"/>
+      <circle cx="415" cy="178" r="18" fill="#2C2C2A" stroke="#444441" stroke-width="2"/>
+      <circle cx="415" cy="178" r="8" fill="#888780"/>
+      <rect x="455" y="122" width="18" height="14" rx="3" fill="#FAC775" stroke="#EF9F27" stroke-width="1"/>
+      <rect x="10" y="140" width="7" height="18" rx="2" fill="#FAC775" stroke="#EF9F27" stroke-width="1"/>
+    </svg>
+    <div class="cargo-box">
+      <div class="cargo-title">📦 ${itemsWP.length} item${itemsWP.length!==1?'s':''} on board</div>
+      ${itemsWP.map(it=>`
+        <div class="cargo-item">
+          ${it.photo
+            ? `<img src="${it.photo}" style="width:24px;height:24px;border-radius:3px;object-fit:cover;border:0.5px solid #e5e7eb;flex-shrink:0" alt="${it.name}">`
+            : `<span class="dot" style="background:#185FA5"></span>`}
+          ${it.name}
+        </div>`).join('')}
+    </div>`;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SUBMIT TRIP
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function submitTrip() {
+  if (!isConfigured()) {
+    alert('Please set up JSONBin in Settings first.');
+    switchTab('settings');
+    return;
+  }
+  const name     = document.getElementById('f-name').value.trim();
+  const date     = document.getElementById('f-date').value;
+  const pickup   = getPickup();
+  const dropoff  = getDropoff();
+  const items    = getSelected();
+  const itemsWP  = getSelectedWithPhotos();
+  const comments = document.getElementById('f-comments').value.trim();
+
+  if (!name)              { alert('Please enter your name.'); return; }
+  if (!date)              { alert('Please select a date.'); return; }
+  if (!pickup)            { alert('Please select a pickup location.'); return; }
+  if (!dropoff)           { alert('Please select a dropoff location.'); return; }
+  if (items.length===0)   { alert('Please select at least one item.'); return; }
+  if (pickup===dropoff)   { alert('Pickup and dropoff must be different.'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving...';
+
+  const trip = {
+    id: Date.now().toString(), name, date, pickup, dropoff,
+    items, itemsWithPhotos: itemsWP, comments,
+    timestamp: new Date().toISOString()
+  };
+
+  try {
+    await loadTrips();
+    trips.unshift(trip);
+    await saveTrips();
+    lastKnownTripCount = trips.length;
+    localStorage.setItem('latc_last_count', trips.length);
+    resetForm();
+    document.getElementById('submit-status').innerHTML = '✅ Trip logged successfully.';
+    setTimeout(()=>{ document.getElementById('submit-status').textContent=''; }, 4000);
+    updateAwayBadge();
+  } catch(e) {
+    document.getElementById('submit-status').innerHTML = '⚠️ Error saving. Check your connection.';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Log trip';
+}
+
+function resetForm() {
+  ['f-name','f-date','f-comments','f-pickup-other','f-dropoff-other'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('f-pickup').value='';
+  document.getElementById('f-dropoff').value='';
+  document.getElementById('row-pu-other').classList.add('hidden');
+  document.getElementById('row-do-other').classList.add('hidden');
+  EQUIPMENT.forEach((_,i)=>document.getElementById('eq-'+i)?.classList.remove('selected'));
+  document.getElementById('van-preview').classList.add('hidden');
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER TRIPS
+// ─────────────────────────────────────────────────────────────────────────────
+
+function renderTrips() {
+  const list = document.getElementById('trips-list');
+  if (trips.length===0) {
+    list.innerHTML='<div style="text-align:center;padding:2rem;color:#6b7280">🚐 No trips logged yet</div>';
+    return;
+  }
+  list.innerHTML = trips.map(t => {
+    const itemsWP = t.itemsWithPhotos || t.items.map(n=>({name:n,photo:sharedPhotos[EQUIPMENT.indexOf(n)]||null}));
+    return `<div class="log-card">
+      <div style="font-size:13px;font-weight:600">${t.name}
+        <span style="font-weight:400;color:#6b7280"> — ${fmtDate(t.date)}</span>
+      </div>
+      <div style="margin-top:10px">${buildVanHTML(t.name,t.pickup,t.dropoff,itemsWP,t.date)}</div>
+      ${t.comments?`<div style="font-size:12px;color:#6b7280;margin-top:8px;padding-top:8px;border-top:0.5px solid #e5e7eb">💬 ${t.comments}</div>`:''}
+      <button class="del-btn" onclick="deleteTrip('${t.id}')">🗑 Delete</button>
+    </div>`;
+  }).join('');
+}
+
+async function deleteTrip(id) {
+  if (!confirm('Delete this trip?')) return;
+  await loadTrips();
+  trips = trips.filter(t=>t.id!==id);
+  await saveTrips();
+  renderTrips();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// RENDER AWAY
+// ─────────────────────────────────────────────────────────────────────────────
+
+function renderAway() {
+  const home  = getHome();
+  const today = new Date(); today.setHours(0,0,0,0);
+  const latest = {};
+  [...trips].sort((a,b)=>a.date.localeCompare(b.date)).forEach(t=>{
+    t.items.forEach(item=>{ latest[item]=t; });
+  });
+
+  const awayItems=[], homeItems=[];
+  EQUIPMENT.forEach(item=>{
+    const t=latest[item]; if(!t) return;
+    const diff=Math.floor((today-new Date(t.date+'T12:00:00'))/86400000);
+    if(t.dropoff!==home) awayItems.push({item,loc:t.dropoff,diff,trip:t});
+    else homeItems.push({item,loc:home,diff,trip:t});
+  });
+
+  const overdue=awayItems.filter(a=>a.diff>1);
+  document.getElementById('away-alerts').innerHTML = overdue.length>0 ? `
+    <div class="alert-box">
+      <div style="font-size:13px;font-weight:600;color:#92400E;margin-bottom:8px">
+        ⚠️ ${overdue.length} item${overdue.length!==1?'s':''} away for more than 1 day
+      </div>
+      ${overdue.map(a=>`<div class="alert-row">
+        <div style="font-size:13px;font-weight:500;color:#78350F">${a.item}</div>
+        <div style="font-size:12px;color:#92400E;margin-top:2px">📍 At ${a.loc} · ${a.diff} day${a.diff!==1?'s':''} · moved by ${a.trip.name}</div>
+      </div>`).join('')}
+    </div>` : '';
+
+  const listEl=document.getElementById('away-list');
+  if(trips.length===0){
+    listEl.innerHTML='<div style="text-align:center;padding:2rem;color:#6b7280">📦 No trips yet</div>';
+    return;
+  }
+
+  function rowHTML(a, dotColor, rightText) {
+    const photo=sharedPhotos[EQUIPMENT.indexOf(a.item)];
+    return `<div class="status-row">
+      ${photo
+        ?`<img src="${photo}" style="width:28px;height:28px;border-radius:4px;object-fit:cover;border:0.5px solid #e5e7eb;flex-shrink:0" alt="${a.item}">`
+        :`<span class="dot" style="background:${dotColor}"></span>`}
+      <span style="font-size:13px;flex:1">${a.item}</span>
+      <span style="font-size:12px;color:#6b7280;text-align:right">${rightText}</span>
+    </div>`;
+  }
+
+  let html='';
+  if(awayItems.length>0){
+    html+=`<div style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">Away from ${home}</div>`;
+    awayItems.forEach(a=>{ html+=rowHTML(a,a.diff>1?'#DC2626':'#2563EB',`${a.loc} · ${a.diff}d · ${a.trip.name}`); });
+    if(homeItems.length>0) html+=`<div style="margin:12px 0;border-bottom:0.5px solid #e5e7eb"></div>`;
+  }
+  if(homeItems.length>0){
+    html+=`<div style="font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px">At ${home}</div>`;
+    homeItems.forEach(a=>{ html+=rowHTML(a,'#16A34A',`Returned · ${a.trip.name}`); });
+  }
+  listEl.innerHTML=html||'<div style="text-align:center;padding:1rem;color:#6b7280">All equipment accounted for ✅</div>';
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PHOTOS TAB
+// ─────────────────────────────────────────────────────────────────────────────
+
+function buildPhotosGrid() {
+  document.getElementById('photos-grid').innerHTML = EQUIPMENT.map((e,i)=>{
+    const photo=sharedPhotos[i];
+    return `<div class="photo-row">
+      <div style="flex-shrink:0">
+        ${photo
+          ?`<img src="${photo}" style="width:56px;height:56px;border-radius:8px;object-fit:cover;border:0.5px solid #e5e7eb;cursor:pointer" onclick="triggerUpload(${i})" alt="${e}">`
+          :`<div style="width:56px;height:56px;border-radius:8px;border:1.5px dashed #d1d5db;display:flex;align-items:center;justify-content:center;background:#f9fafb;cursor:pointer;font-size:24px" onclick="triggerUpload(${i})">+</div>`}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500;margin-bottom:6px">${e}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-sm" onclick="triggerUpload(${i})">${photo?'Change photo':'Add photo'}</button>
+          ${photo?`<button class="btn btn-sm btn-danger" id="del-photo-${i}" onclick="handleDeletePhoto(${i})">Remove</button>`:''}
+        </div>
+        <div id="photo-status-${i}" style="font-size:12px;margin-top:4px;min-height:16px;color:#6b7280"></div>
+      </div>
+      <input type="file" accept="image/*" id="file-${i}" onchange="handleUpload(event,${i})">
+    </div>`;
+  }).join('');
+}
+
+function triggerUpload(i) { document.getElementById('file-'+i).click(); }
+
+async function handleUpload(event, i) {
+  if (!isConfigured()) { alert('Please set up JSONBin in Settings first.'); return; }
+  const file=event.target.files[0]; if(!file) return;
+  const statusEl=document.getElementById('photo-status-'+i);
+  if(statusEl) statusEl.innerHTML='<span class="spinner-dark"></span> Uploading...';
+  try {
+    const base64=await compressImage(file);
+    sharedPhotos[i]=base64;
+    await savePhotos();
+    buildPhotosGrid();
+    buildEquipGrid();
+  } catch(e) {
+    if(statusEl){ statusEl.style.color='#B91C1C'; statusEl.textContent='Upload failed. Try a smaller image.'; }
+  }
+}
+
+async function handleDeletePhoto(i) {
+  if (!isConfigured()) return;
+  const btn=document.getElementById('del-photo-'+i);
+  if(btn){btn.disabled=true;btn.textContent='Removing...';}
+  try {
+    delete sharedPhotos[i];
+    await savePhotos();
+    buildPhotosGrid();
+    buildEquipGrid();
+  } catch(e) {
+    if(btn){btn.disabled=false;btn.textContent='Remove';}
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PASSWORD GATE
+// ─────────────────────────────────────────────────────────────────────────────
+
+function checkPw(tab) {
+  const val=document.getElementById('pw-'+tab).value;
+  if(val===getPassword()){
+    unlocked[tab]=true;
+    document.getElementById('gate-'+tab).classList.add('hidden');
+    document.getElementById('content-'+tab).classList.remove('hidden');
+    if(tab==='trips'){
+      document.getElementById('badge-trips').classList.add('hidden');
+      loadAndRenderTrips();
+    }
+    if(tab==='away') loadAndRenderAway();
+  } else {
+    document.getElementById('err-'+tab).textContent='Incorrect password. Try again.';
+    document.getElementById('pw-'+tab).value='';
+  }
+}
+
+async function loadAndRenderTrips() {
+  document.getElementById('trips-sync-bar').textContent='Loading...';
+  await loadTrips();
+  renderTrips();
+  document.getElementById('trips-sync-bar').textContent='Last synced: '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+async function loadAndRenderAway() {
+  document.getElementById('away-sync-bar').textContent='Loading...';
+  await loadTrips();
+  renderAway();
+  document.getElementById('away-sync-bar').textContent='Last synced: '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SETTINGS
+// ─────────────────────────────────────────────────────────────────────────────
+
+function savePassword() {
+  const p=document.getElementById('s-pw').value;
+  const p2=document.getElementById('s-pw2').value;
+  if(!p)    {setMsg('pw-msg','Please enter a password.',false);return;}
+  if(p!==p2){setMsg('pw-msg','Passwords do not match.',false);return;}
+  localStorage.setItem('latc_pw',p);
+  unlocked.trips=false; unlocked.away=false;
+  document.getElementById('s-pw').value='';
+  document.getElementById('s-pw2').value='';
+  setMsg('pw-msg','Password saved. Both tabs are now re-locked.',true);
+}
+
+function saveHome() {
+  localStorage.setItem('latc_home',document.getElementById('s-home').value);
+  setMsg('home-msg','Saved.',true);
+}
+
+function loadSettingsUI() {
+  const key=getApiKey();
+  if(key) document.getElementById('s-jsonbin-key').value=key;
+  const status=document.getElementById('jsonbin-status');
+  if(isConfigured()){
+    status.textContent='✅ Connected — Trips bin: '+getTripsBin()+' · Photos bin: '+getPhotosBin();
+    status.style.color='#065F46';
+  } else {
+    status.textContent='Not connected yet.';
+    status.style.color='#6b7280';
+  }
+  document.getElementById('s-home').value=getHome();
+  updateNotifStatusBox();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TAB SWITCHING
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function switchTab(t) {
+  ['log','trips','away','photos','settings'].forEach(id=>{
+    document.getElementById('tab-'+id).classList.toggle('hidden',id!==t);
+  });
+  document.querySelectorAll('.tab').forEach((el,i)=>{
+    el.classList.toggle('active',['log','trips','away','photos','settings'][i]===t);
+  });
+  if(t==='photos'){
+    document.getElementById('photos-loading').classList.remove('hidden');
+    document.getElementById('photos-grid').classList.add('hidden');
+    await loadAllPhotos();
+    document.getElementById('photos-loading').classList.add('hidden');
+    document.getElementById('photos-grid').classList.remove('hidden');
+    buildPhotosGrid();
+  }
+  if(t==='settings') loadSettingsUI();
+  if(t==='trips' && unlocked.trips) loadAndRenderTrips();
+  if(t==='away'  && unlocked.away)  loadAndRenderAway();
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// INIT
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function init() {
+  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+
+  if (!isConfigured()) {
+    document.getElementById('setup-banner').classList.remove('hidden');
+    document.getElementById('equip-loading').innerHTML='<span style="color:#9A3412">⚙️ Set up JSONBin in Settings to load equipment.</span>';
+  } else {
+    await loadAllPhotos();
+    updateAwayBadge();
+    startPolling();
+    pollForNewTrips();
+  }
+
+  document.getElementById('equip-loading').classList.add('hidden');
+  document.getElementById('equip-grid').classList.remove('hidden');
+  buildEquipGrid();
+
+  showNotifGrantBar();
+}
+
+init();
+</script>
+</body>
+</html>
