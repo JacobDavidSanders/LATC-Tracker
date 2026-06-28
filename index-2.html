@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Equipment Tracker">
+<title>Equipment Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#111;background:#f3f4f6;min-height:100vh}
+.app{max-width:700px;margin:0 auto;padding:1rem}
+.header{background:#185FA5;color:#fff;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:14px}
+.header h1{font-size:16px;font-weight:600;margin:0}
+.section{background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.sec-title{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:13px;color:#6b7280}
+input[type=text],input[type=date],input[type=password],input[type=url],select,textarea{width:100%;font-size:14px;padding:8px 10px;border:0.5px solid #d1d5db;border-radius:8px;background:#f9fafb;color:#111;outline:none;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:#185FA5;box-shadow:0 0 0 2px rgba(24,95,165,0.1);background:#fff}
+textarea{resize:vertical;min-height:56px}
+.btn{border-radius:8px;padding:9px 18px;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid #d1d5db;background:#f9fafb;color:#111;font-family:inherit;transition:opacity 0.15s}
+.btn:hover{opacity:0.8}
+.btn-primary{background:#185FA5;color:#fff;border-color:#185FA5}
+.btn-primary:disabled{background:#B5D4F4;border-color:#B5D4F4;cursor:not-allowed}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-danger{color:#E53E3E;border-color:#E53E3E}
+.tab-row{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{position:relative;padding:7px 14px;border-radius:8px;border:0.5px solid #d1d5db;font-size:13px;cursor:pointer;background:#fff;color:#6b7280;font-family:inherit;transition:all 0.15s}
+.tab:hover{background:#f3f4f6}
+.tab.active{background:#185FA5;border-color:#185FA5;color:#fff}
+.badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:#E53E3E;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #f3f4f6;padding:0 3px}
+.badge.hidden{display:none}
+.hidden{display:none}
+.loc-badge{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap}
+.from-badge{background:#FAEEDA;color:#633806}
+.to-badge{background:#E1F5EE;color:#085041}
+.cargo-box{background:#f9fafb;border:0.5px solid #e5e7eb;border-radius:8px;padding:10px 14px;margin-top:10px}
+.cargo-title{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
+.cargo-item{font-size:13px;padding:4px 0;border-bottom:0.5px solid #e5e7eb;display:flex;align-items:center;gap:8px;color:#111}
+.cargo-item:last-child{border-bottom:none}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.equip-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+@media(max-width:480px){.equip-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
+.equip-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;border:0.5px solid #e5e7eb;cursor:pointer;background:#f9fafb;user-select:none;transition:all 0.12s}
+.equip-item:hover{border-color:#d1d5db;background:#f3f4f6}
+.equip-item.selected{background:#E6F1FB;border-color:#85B7EB;color:#0C447C}
+.equip-check{width:16px;height:16px;border-radius:4px;border:1.5px solid #d1d5db;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.12s}
+.equip-item.selected .equip-check{background:#185FA5;border-color:#185FA5}
+.tick{display:none;width:9px;height:6px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.equip-item.selected .tick{display:block}
+.equip-thumb{width:34px;height:34px;border-radius:5px;object-fit:cover;border:0.5px solid #e5e7eb;flex-shrink:0}
+.equip-thumb-ph{width:34px;height:34px;border-radius:5px;border:0.5px dashed #d1d5db;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#fff;color:#9ca3af;font-size:16px}
+.equip-label{flex:1;min-width:0;font-size:12px;line-height:1.4;color:inherit}
+.alert-box{background:#FFFBEB;border:0.5px solid #F59E0B;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+.alert-row{background:#fff;border:0.5px solid #FCD34D;border-radius:8px;padding:8px 12px;margin-bottom:5px}
+.alert-row:last-child{margin-bottom:0}
+.status-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #e5e7eb}
+.status-row:last-child{border-bottom:none}
+.log-card{background:#f9fafb;border:0.5px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px}
+.spinner-dark{display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,0.12);border-top-color:#185FA5;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sync-bar{font-size:12px;color:#6b7280;text-align:right;margin-bottom:6px;min-height:16px}
+.gate{display:flex;flex-direction:column;align-items:center;padding:3rem 1rem}
+.gate-card{background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:1.5rem;width:100%;max-width:320px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.del-btn{font-size:11px;color:#6b7280;background:none;border:0.5px solid #e5e7eb;border-radius:6px;padding:3px 8px;cursor:pointer;margin-top:8px;font-family:inherit}
+.del-btn:hover{color:#E53E3E;border-color:#E53E3E}
+.notif-banner{background:#EFF6FF;border:0.5px solid #93C5FD;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px}
+.notif-grant{background:#F0FDF4;border:0.5px solid #86EFAC;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.new-trip-banner{background:#EFF6FF;border:0.5px solid #93C5FD;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px}
+input[type=file]{display:none}
+.photo-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid #e5e7eb}
+.photo-row:last-child{border-bottom:none}
+.setup-banner{background:#FFF7ED;border:0.5px solid #FB923C;border-radius:10px;padding:12px 16px;margin-bottom:1rem}
+.step{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+.step:last-child{margin-bottom:0}
+.step-num{width:22px;height:22px;border-radius:50%;background:#185FA5;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;color:#111;line-height:1.5}
+.step-text a{color:#185FA5;text-decoration:underline}
+.divider{border:none;border-top:0.5px solid #e5e7eb;margin:12px 0}
+/* Info icon button — click only, no hover tooltip */
+.equip-wrap{position:relative}
+.equip-info-btn{
+  width:20px;height:20px;border-radius:50%;
+  background:#185FA5;color:#fff;
+  border:none;cursor:pointer;
+  font-size:11px;font-weight:700;font-style:italic;font-family:Georgia,serif;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;margin-left:auto;
+  line-height:1;
+  transition:background 0.12s;
+}
+.equip-info-btn:hover{background:#0C447C}
+.equip-dropdown{
+  display:none;position:absolute;top:calc(100% + 6px);right:0;z-index:30;
+  min-width:200px;background:#fff;
+  border:1px solid #85B7EB;border-radius:10px;
+  padding:10px 13px;
+  box-shadow:0 6px 22px rgba(0,0,0,0.13)
+}
+.equip-wrap.info-open .equip-dropdown{display:block}
+.equip-dropdown-title{font-size:10px;font-weight:700;color:#185FA5;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:7px}
+.equip-dropdown-row{font-size:12.5px;color:#374151;padding:4px 0;display:flex;align-items:center;gap:7px;border-bottom:0.5px solid #f3f4f6}
+.equip-dropdown-row:last-child{border-bottom:none}
+.equip-dropdown-row::before{content:'✓';color:#185FA5;font-weight:700;font-size:11px;flex-shrink:0}
+/* Trip cards */
+.trip-card{background:#fff;border:0.5px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.trip-card-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.trip-name{font-size:14px;font-weight:600;color:#111}
+.trip-date{font-size:12px;color:#6b7280;margin-left:auto}
+.trip-route{display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:8px;flex-wrap:wrap}
+.trip-equip{font-size:12px;color:#374151;line-height:1.6}
+.trip-comments{font-size:12px;color:#6b7280;margin-top:6px;font-style:italic}
+.trips-empty{text-align:center;padding:2rem 1rem;color:#9ca3af;font-size:14px}
+/* Lock gate for trips */
+.lock-gate{padding:2rem 1rem;display:flex;flex-direction:column;align-items:center;gap:12px}
+.lock-gate-card{background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:1.5rem;width:100%;max-width:300px;box-shadow:0 1px 4px rgba(0,0,0,0.06);text-align:center}
+.lock-gate-title{font-size:15px;font-weight:600;margin-bottom:4px}
+.lock-gate-sub{font-size:13px;color:#6b7280;margin-bottom:16px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- HEADER with SVG bus -->
+<div class="header">
+  <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="flex-shrink:0">
+    <!-- Bus body -->
+    <rect x="3" y="10" width="38" height="22" rx="4" fill="white" fill-opacity="0.22"/>
+    <rect x="3" y="10" width="38" height="22" rx="4" stroke="white" stroke-width="1.5" fill="none"/>
+    <!-- Roof strip -->
+    <rect x="3" y="10" width="38" height="6" rx="4" fill="white" fill-opacity="0.18"/>
+    <!-- Front windscreen -->
+    <rect x="29" y="14" width="8" height="6" rx="1.5" fill="white" fill-opacity="0.55"/>
+    <!-- Side windows -->
+    <rect x="7" y="14" width="6" height="6" rx="1.5" fill="white" fill-opacity="0.55"/>
+    <rect x="15" y="14" width="6" height="6" rx="1.5" fill="white" fill-opacity="0.55"/>
+    <rect x="23" y="14" width="4" height="6" rx="1.5" fill="white" fill-opacity="0.55"/>
+    <!-- Door -->
+    <rect x="7" y="22" width="6" height="7" rx="1" fill="white" fill-opacity="0.3"/>
+    <line x1="10" y1="22" x2="10" y2="29" stroke="white" stroke-width="0.8" stroke-opacity="0.5"/>
+    <!-- Undercarriage -->
+    <rect x="5" y="31" width="34" height="3" rx="1" fill="white" fill-opacity="0.15"/>
+    <!-- Wheels -->
+    <circle cx="12" cy="34" r="4" fill="#0C447C" stroke="white" stroke-width="1.5"/>
+    <circle cx="12" cy="34" r="1.8" fill="white" fill-opacity="0.4"/>
+    <circle cx="32" cy="34" r="4" fill="#0C447C" stroke="white" stroke-width="1.5"/>
+    <circle cx="32" cy="34" r="1.8" fill="white" fill-opacity="0.4"/>
+    <!-- Destination board -->
+    <rect x="28" y="10.8" width="11" height="3" rx="1" fill="#F59E0B" fill-opacity="0.85"/>
+    <!-- Headlight -->
+    <rect x="38" y="20" width="2.5" height="3" rx="0.8" fill="#FDE68A"/>
+    <!-- Tail light -->
+    <rect x="3.5" y="20" width="2" height="3" rx="0.8" fill="#FCA5A5"/>
+  </svg>
+  <div>
+    <h1>Equipment Tracker</h1>
+  </div>
+</div>
+
+<!-- SETUP BANNER -->
+<div id="setup-banner" class="setup-banner hidden">
+  <div style="font-size:13px;font-weight:600;color:#9A3412;margin-bottom:10px">⚙️ Setup required — connect JSONBin to enable shared storage</div>
+  <div class="step"><div class="step-num">1</div><div class="step-text">Go to <a href="https://jsonbin.io" target="_blank">jsonbin.io</a> and create a free account</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-text">Click <strong>API Keys</strong> in the top menu → <strong>Create Access Key</strong> → copy it</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-text">Go to <strong>Settings</strong> tab below → paste your key → click <strong>Save &amp; connect</strong></div></div>
+</div>
+
+<!-- TABS -->
+<div class="tab-row">
+  <button class="tab active" id="tab-btn-log" onclick="switchTab('log')">📋 Log trip</button>
+  <button class="tab" id="tab-btn-trips" onclick="switchTab('trips')">🚐 All trips<span class="badge hidden" id="badge-trips">!</span></button>
+  <button class="tab" id="tab-btn-away" onclick="switchTab('away')">⚠️ Away<span class="badge hidden" id="badge-away"></span></button>
+  <button class="tab" id="tab-btn-photos" onclick="switchTab('photos')">📷 Photos</button>
+  <button class="tab" id="tab-btn-settings" onclick="switchTab('settings')">⚙️ Settings</button>
+</div>
+
+<!-- LOG TRIP TAB -->
+<div id="tab-log">
+  <div class="section">
+    <div class="sec-title">Trip details</div>
+    <div class="form-row">
+      <div class="fg"><label>Your name</label><input type="text" id="f-name" placeholder="e.g. Jacob"></div>
+      <div class="fg"><label>Date</label><input type="date" id="f-date"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Pickup location</label>
+        <select id="f-pickup" onchange="onLocChange()">
+          <option value="">Select location</option>
+          <option>PSCI</option><option>Ayo House</option><option>Pope Building</option><option>Storage Unit</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label>Dropoff location</label>
+        <select id="f-dropoff" onchange="onLocChange()">
+          <option value="">Select location</option>
+          <option>PSCI</option><option>Ayo House</option><option>Pope Building</option><option>Storage Unit</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div id="row-pu-other" class="hidden" style="margin-bottom:10px">
+      <div class="fg"><label>Specify pickup</label><input type="text" id="f-pickup-other" placeholder="Enter location" oninput="updatePreview()"></div>
+    </div>
+    <div id="row-do-other" class="hidden" style="margin-bottom:10px">
+      <div class="fg"><label>Specify dropoff</label><input type="text" id="f-dropoff-other" placeholder="Enter location" oninput="updatePreview()"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Equipment taken</div>
+    <div id="equip-loading" style="font-size:13px;color:#6b7280;padding:8px 0"><span class="spinner-dark"></span> Loading...</div>
+    <div class="equip-grid hidden" id="equip-grid"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Comments</div>
+    <textarea id="f-comments" placeholder="Any notes about this trip..."></textarea>
+  </div>
+
+  <div id="van-preview" class="hidden section">
+    <div class="sec-title">Trip preview</div>
+    <div id="van-preview-inner"></div>
+  </div>
+
+  <div class="sync-bar" id="submit-status"></div>
+  <button class="btn btn-primary" id="submit-btn" onclick="submitTrip()" style="width:100%;padding:12px">Log trip</button>
+</div>
+
+<!-- ALL TRIPS TAB -->
+<div id="tab-trips" class="hidden">
+  <div id="trips-lock-gate" class="lock-gate">
+    <div class="lock-gate-card">
+      <div style="font-size:28px;margin-bottom:8px">🔒</div>
+      <div class="lock-gate-title">View all trips</div>
+      <div class="lock-gate-sub">Enter the shared PIN to view trip history</div>
+      <div class="fg" style="margin-bottom:12px">
+        <input type="password" id="trips-pin-input" placeholder="Enter PIN" onkeydown="if(event.key==='Enter')unlockTrips()">
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="unlockTrips()">Unlock</button>
+      <div id="trips-pin-error" style="font-size:12px;color:#E53E3E;margin-top:8px;text-align:center"></div>
+    </div>
+  </div>
+
+  <div id="trips-content" class="hidden">
+    <div class="section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <div class="sec-title" style="margin-bottom:0">Trip history</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="trips-sync-status" style="font-size:12px;color:#6b7280"></span>
+          <button class="btn btn-sm" onclick="loadTrips()">↻ Refresh</button>
+        </div>
+      </div>
+      <div id="trips-loading" style="font-size:13px;color:#6b7280;padding:8px 0;display:none"><span class="spinner-dark"></span> Loading trips...</div>
+      <div id="trips-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- AWAY TAB -->
+<div id="tab-away" class="hidden">
+  <div id="away-lock-gate" class="lock-gate">
+    <div class="lock-gate-card">
+      <div style="font-size:28px;margin-bottom:8px">🔒</div>
+      <div class="lock-gate-title">Away equipment</div>
+      <div class="lock-gate-sub">Enter the shared PIN to view what's currently away</div>
+      <div class="fg" style="margin-bottom:12px">
+        <input type="password" id="away-pin-input" placeholder="Enter PIN" onkeydown="if(event.key==='Enter')unlockAway()">
+      </div>
+      <button class="btn btn-primary" style="width:100%" onclick="unlockAway()">Unlock</button>
+      <div id="away-pin-error" style="font-size:12px;color:#E53E3E;margin-top:8px;text-align:center"></div>
+    </div>
+  </div>
+  <div id="away-content" class="hidden">
+    <div class="section">
+      <div class="sec-title">Currently away</div>
+      <div id="away-loading" style="font-size:13px;color:#6b7280;padding:8px 0;display:none"><span class="spinner-dark"></span> Loading...</div>
+      <div id="away-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PHOTOS TAB -->
+<div id="tab-photos" class="hidden">
+  <div class="section">
+    <div class="sec-title">Equipment photos</div>
+    <p style="font-size:13px;color:#6b7280;margin-bottom:1rem">Add photos to help identify each item in the equipment list.</p>
+    <div id="photos-list"></div>
+  </div>
+</div>
+
+<!-- SETTINGS TAB -->
+<div id="tab-settings" class="hidden">
+  <div class="section">
+    <div class="sec-title">JSONBin storage</div>
+    <div class="fg" style="margin-bottom:10px">
+      <label>API Key</label>
+      <input type="password" id="s-apikey" placeholder="Paste your JSONBin API key">
+    </div>
+    <div class="fg" style="margin-bottom:10px">
+      <label>Bin ID (leave blank to create new)</label>
+      <input type="text" id="s-binid" placeholder="e.g. 64abc123def456">
+    </div>
+    <div class="fg" style="margin-bottom:14px">
+      <label>Shared PIN (for All Trips &amp; Away views)</label>
+      <input type="text" id="s-pin" placeholder="e.g. 1234">
+    </div>
+    <div class="sync-bar" id="settings-status"></div>
+    <button class="btn btn-primary" onclick="saveSettings()">Save &amp; connect</button>
+  </div>
+  <div class="section">
+    <div class="sec-title">Danger zone</div>
+    <button class="btn btn-danger" onclick="clearAllData()">Clear all local data</button>
+  </div>
+</div>
+
+</div><!-- end .app -->
+
+<script>
+const EQUIPMENT = [
+  '2x Alto TS415 speakers','2x Alto TS215 speakers','Individual speaker for bass',
+  'Keyboard','Keyboard stand','Drums','Lights','Mixer','Pulpit',
+  'Extensions & power cables','XLR cables','Instrumentalist cables with DIs',
+  'Microphone bag','TGX banners','GES banners','Speaker stands',
+  'Microphone receiver box','Floor wedge'
+];
+
+const EQUIPMENT_ACCESSORIES = {
+  'Keyboard': ['Keyboard bag', '1x DI Box', '2x XLR', '2x Instrument cable']
+};
+
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
+let trips = [];
+let sharedPhotos = {};
+let unlocked = { trips: false, away: false };
+let cfg = { apiKey: '', binId: '', pin: '' };
+
+// ── Settings ────────────────────────────────────────────────────────────────
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('eq-cfg') || '{}');
+    cfg.apiKey = s.apiKey || '';
+    cfg.binId  = s.binId  || '';
+    cfg.pin    = s.pin    || '';
+    if (document.getElementById('s-apikey')) document.getElementById('s-apikey').value = cfg.apiKey;
+    if (document.getElementById('s-binid'))  document.getElementById('s-binid').value  = cfg.binId;
+    if (document.getElementById('s-pin'))    document.getElementById('s-pin').value    = cfg.pin;
+  } catch(e) {}
+}
+
+function saveSettings() {
+  cfg.apiKey = document.getElementById('s-apikey').value.trim();
+  cfg.binId  = document.getElementById('s-binid').value.trim();
+  cfg.pin    = document.getElementById('s-pin').value.trim();
+  localStorage.setItem('eq-cfg', JSON.stringify(cfg));
+  const el = document.getElementById('settings-status');
+  el.textContent = '✓ Saved';
+  setTimeout(() => el.textContent = '', 2000);
+}
+
+function clearAllData() {
+  if (!confirm('Clear all local data? This cannot be undone.')) return;
+  localStorage.clear();
+  location.reload();
+}
+
+// ── Equipment grid ───────────────────────────────────────────────────────────
+function buildEquipGrid() {
+  document.getElementById('equip-grid').innerHTML = EQUIPMENT.map((e, i) => {
+    const photo = sharedPhotos[i];
+    const acc   = EQUIPMENT_ACCESSORIES[e];
+    const inner = `<div class="equip-item" id="eq-${i}" onclick="toggleEq(${i})">
+      <div class="equip-check"><div class="tick"></div></div>
+      ${photo
+        ? `<img src="${photo}" class="equip-thumb" alt="${e}">`
+        : `<div class="equip-thumb-ph">📷</div>`}
+      <span class="equip-label">${e}</span>
+      ${acc ? `<button class="equip-info-btn" title="What's included" onclick="toggleInfoDropdown(event,${i})" aria-label="What's included with ${e}">i</button>` : ''}
+    </div>
+    ${acc ? `<div class="equip-dropdown">
+      <div class="equip-dropdown-title">Comes with</div>
+      ${acc.map(a => `<div class="equip-dropdown-row">${a}</div>`).join('')}
+    </div>` : ''}`;
+    return acc
+      ? `<div class="equip-wrap" id="eq-wrap-${i}">${inner}</div>`
+      : inner;
+  }).join('');
+}
+
+function toggleEq(i) {
+  document.getElementById('eq-' + i).classList.toggle('selected');
+  updatePreview();
+}
+
+// Click the ℹ button to open/close — no hover behaviour
+function toggleInfoDropdown(ev, i) {
+  ev.stopPropagation();
+  const wrap   = document.getElementById('eq-wrap-' + i);
+  if (!wrap) return;
+  const isOpen = wrap.classList.contains('info-open');
+  document.querySelectorAll('.equip-wrap.info-open').forEach(w => w.classList.remove('info-open'));
+  if (!isOpen) wrap.classList.add('info-open');
+}
+
+// Close dropdowns when clicking anywhere else
+document.addEventListener('click', function() {
+  document.querySelectorAll('.equip-wrap.info-open').forEach(w => w.classList.remove('info-open'));
+});
+
+// ── Preview ──────────────────────────────────────────────────────────────────
+function updatePreview() {
+  const sel = EQUIPMENT.filter((_, i) => document.getElementById('eq-' + i)?.classList.contains('selected'));
+  const pu  = document.getElementById('f-pickup').value  === 'Other' ? document.getElementById('f-pickup-other').value  : document.getElementById('f-pickup').value;
+  const dr  = document.getElementById('f-dropoff').value === 'Other' ? document.getElementById('f-dropoff-other').value : document.getElementById('f-dropoff').value;
+  const prev = document.getElementById('van-preview');
+  if (!pu && !dr && !sel.length) { prev.classList.add('hidden'); return; }
+  prev.classList.remove('hidden');
+  const inner = document.getElementById('van-preview-inner');
+  inner.innerHTML = `
+    <div class="trip-route">
+      ${pu ? `<span class="loc-badge from-badge">From: ${pu}</span>` : ''}
+      ${pu && dr ? '<span style="color:#9ca3af">→</span>' : ''}
+      ${dr ? `<span class="loc-badge to-badge">To: ${dr}</span>` : ''}
+    </div>
+    ${sel.length ? `<div class="cargo-box">
+      <div class="cargo-title">Equipment</div>
+      ${sel.map(e => `<div class="cargo-item"><span class="dot" style="background:#185FA5"></span>${e}</div>`).join('')}
+    </div>` : ''}`;
+}
+
+function onLocChange() {
+  const pu = document.getElementById('f-pickup').value;
+  const dr = document.getElementById('f-dropoff').value;
+  document.getElementById('row-pu-other').classList.toggle('hidden', pu !== 'Other');
+  document.getElementById('row-do-other').classList.toggle('hidden', dr !== 'Other');
+  updatePreview();
+}
+
+// ── Submit trip ──────────────────────────────────────────────────────────────
+async function submitTrip() {
+  const name = document.getElementById('f-name').value.trim();
+  const date = document.getElementById('f-date').value;
+  const pu   = document.getElementById('f-pickup').value  === 'Other' ? document.getElementById('f-pickup-other').value.trim()  : document.getElementById('f-pickup').value;
+  const dr   = document.getElementById('f-dropoff').value === 'Other' ? document.getElementById('f-dropoff-other').value.trim() : document.getElementById('f-dropoff').value;
+  const sel  = EQUIPMENT.filter((_, i) => document.getElementById('eq-' + i)?.classList.contains('selected'));
+  const comments = document.getElementById('f-comments').value.trim();
+
+  if (!name) { alert('Please enter your name.'); return; }
+  if (!date) { alert('Please select a date.'); return; }
+  if (!pu)   { alert('Please select a pickup location.'); return; }
+  if (!dr)   { alert('Please select a dropoff location.'); return; }
+  if (!sel.length) { alert('Please select at least one piece of equipment.'); return; }
+
+  const trip = { id: Date.now(), name, date, from: pu, to: dr, equipment: sel, comments };
+
+  const btn = document.getElementById('submit-btn');
+  const st  = document.getElementById('submit-status');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Saving...';
+
+  // Save locally
+  const local = JSON.parse(localStorage.getItem('eq-trips') || '[]');
+  local.unshift(trip);
+  localStorage.setItem('eq-trips', JSON.stringify(local));
+
+  // Try remote
+  if (cfg.apiKey && cfg.binId) {
+    try {
+      const existing = await fetchBin();
+      const merged = [trip, ...(existing.trips || [])];
+      await saveBin({ trips: merged });
+      st.textContent = '✓ Saved to shared storage';
+    } catch(e) {
+      st.textContent = '⚠ Saved locally only (remote failed)';
+    }
+  } else {
+    st.textContent = '✓ Saved locally';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Log trip';
+  setTimeout(() => st.textContent = '', 3000);
+
+  // Reset form
+  document.querySelectorAll('.equip-item.selected').forEach(el => el.classList.remove('selected'));
+  document.getElementById('f-comments').value = '';
+  document.getElementById('van-preview').classList.add('hidden');
+}
+
+// ── JSONBin helpers ──────────────────────────────────────────────────────────
+async function fetchBin() {
+  const r = await fetch(`${JSONBIN_BASE}/${cfg.binId}/latest`, {
+    headers: { 'X-Master-Key': cfg.apiKey }
+  });
+  const d = await r.json();
+  return d.record || {};
+}
+
+async function saveBin(data) {
+  await fetch(`${JSONBIN_BASE}/${cfg.binId}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': cfg.apiKey },
+    body: JSON.stringify(data)
+  });
+}
+
+// ── Trips tab ────────────────────────────────────────────────────────────────
+function unlockTrips() {
+  const input = document.getElementById('trips-pin-input').value;
+  const err   = document.getElementById('trips-pin-error');
+  if (!cfg.pin || input === cfg.pin) {
+    unlocked.trips = true;
+    document.getElementById('trips-lock-gate').classList.add('hidden');
+    document.getElementById('trips-content').classList.remove('hidden');
+    loadTrips();
+  } else {
+    err.textContent = 'Incorrect PIN. Try again.';
+    setTimeout(() => err.textContent = '', 2000);
+  }
+}
+
+async function loadTrips() {
+  const listEl = document.getElementById('trips-list');
+  const loadEl = document.getElementById('trips-loading');
+  const statEl = document.getElementById('trips-sync-status');
+  loadEl.style.display = 'block';
+  listEl.innerHTML = '';
+
+  let all = JSON.parse(localStorage.getItem('eq-trips') || '[]');
+
+  if (cfg.apiKey && cfg.binId) {
+    try {
+      const remote = await fetchBin();
+      if (remote.trips && Array.isArray(remote.trips)) {
+        // Merge: use remote as source of truth, top up with any local-only
+        const remoteIds = new Set(remote.trips.map(t => t.id));
+        const localOnly = all.filter(t => !remoteIds.has(t.id));
+        all = [...remote.trips, ...localOnly];
+        all.sort((a, b) => b.id - a.id);
+        statEl.textContent = '✓ Synced';
+      }
+    } catch(e) {
+      statEl.textContent = 'Remote unavailable — showing local';
+    }
+  } else {
+    statEl.textContent = 'Local only';
+  }
+
+  loadEl.style.display = 'none';
+
+  if (!all.length) {
+    listEl.innerHTML = '<div class="trips-empty">No trips logged yet.</div>';
+    return;
+  }
+
+  listEl.innerHTML = all.map(t => {
+    const d = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '';
+    return `<div class="trip-card">
+      <div class="trip-card-header">
+        <span class="trip-name">${escHtml(t.name || '—')}</span>
+        <span class="trip-date">${d}</span>
+      </div>
+      <div class="trip-route">
+        <span class="loc-badge from-badge">From: ${escHtml(t.from || '—')}</span>
+        <span style="color:#9ca3af">→</span>
+        <span class="loc-badge to-badge">To: ${escHtml(t.to || '—')}</span>
+      </div>
+      ${t.equipment && t.equipment.length
+        ? `<div class="cargo-box">
+            <div class="cargo-title">Equipment</div>
+            ${t.equipment.map(e => `<div class="cargo-item"><span class="dot" style="background:#185FA5"></span>${escHtml(e)}</div>`).join('')}
+           </div>` : ''}
+      ${t.comments ? `<div class="trip-comments">${escHtml(t.comments)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── Away tab ─────────────────────────────────────────────────────────────────
+function unlockAway() {
+  const input = document.getElementById('away-pin-input').value;
+  const err   = document.getElementById('away-pin-error');
+  if (!cfg.pin || input === cfg.pin) {
+    unlocked.away = true;
+    document.getElementById('away-lock-gate').classList.add('hidden');
+    document.getElementById('away-content').classList.remove('hidden');
+    renderAway();
+  } else {
+    err.textContent = 'Incorrect PIN. Try again.';
+    setTimeout(() => err.textContent = '', 2000);
+  }
+}
+
+function renderAway() {
+  const all = JSON.parse(localStorage.getItem('eq-trips') || '[]');
+  const tally = {};
+  all.forEach(t => {
+    if (t.from !== 'PSCI' && t.to === 'PSCI') return; // returned
+    (t.equipment || []).forEach(e => {
+      if (!tally[e]) tally[e] = { count: 0, lastTrip: null };
+      tally[e].count++;
+      tally[e].lastTrip = t;
+    });
+  });
+  const el = document.getElementById('away-list');
+  const items = Object.entries(tally).filter(([_, v]) => v.count % 2 !== 0);
+  if (!items.length) {
+    el.innerHTML = '<div class="trips-empty">All equipment appears to be in.</div>';
+    return;
+  }
+  el.innerHTML = items.map(([name, v]) => {
+    const t = v.lastTrip;
+    const d = t && t.date ? new Date(t.date).toLocaleDateString('en-GB', { day:'numeric', month:'short' }) : '';
+    return `<div class="alert-row">
+      <div style="font-size:13px;font-weight:600;color:#111">${escHtml(name)}</div>
+      ${t ? `<div style="font-size:12px;color:#6b7280;margin-top:2px">Last logged by ${escHtml(t.name||'?')} on ${d} — to ${escHtml(t.to||'?')}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── Photos tab ───────────────────────────────────────────────────────────────
+function buildPhotosList() {
+  const el = document.getElementById('photos-list');
+  el.innerHTML = EQUIPMENT.map((e, i) => {
+    const photo = sharedPhotos[i];
+    return `<div class="photo-row">
+      ${photo
+        ? `<img src="${photo}" class="equip-thumb" alt="${e}" style="width:44px;height:44px">`
+        : `<div class="equip-thumb-ph" style="width:44px;height:44px">📷</div>`}
+      <span style="flex:1;font-size:13px">${e}</span>
+      <label style="cursor:pointer">
+        <span class="btn btn-sm">${photo ? 'Change' : 'Add'}</span>
+        <input type="file" accept="image/*" onchange="handlePhotoUpload(event,${i})">
+      </label>
+      ${photo ? `<button class="del-btn" onclick="removePhoto(${i})">Remove</button>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function handlePhotoUpload(ev, i) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    sharedPhotos[i] = r.result;
+    localStorage.setItem('eq-photos', JSON.stringify(sharedPhotos));
+    buildPhotosList();
+    buildEquipGrid();
+  };
+  r.readAsDataURL(file);
+}
+
+function removePhoto(i) {
+  delete sharedPhotos[i];
+  localStorage.setItem('eq-photos', JSON.stringify(sharedPhotos));
+  buildPhotosList();
+  buildEquipGrid();
+}
+
+// ── Tab switching ────────────────────────────────────────────────────────────
+function switchTab(name) {
+  ['log','trips','away','photos','settings'].forEach(t => {
+    document.getElementById('tab-' + t).classList.toggle('hidden', t !== name);
+    document.getElementById('tab-btn-' + t).classList.toggle('active', t === name);
+  });
+  if (name === 'photos')   buildPhotosList();
+  if (name === 'settings') loadSettings();
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+function init() {
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  try { sharedPhotos = JSON.parse(localStorage.getItem('eq-photos') || '{}'); } catch(e) {}
+  loadSettings();
+  buildEquipGrid();
+  document.getElementById('equip-loading').classList.add('hidden');
+  document.getElementById('equip-grid').classList.remove('hidden');
+  if (!cfg.apiKey) document.getElementById('setup-banner').classList.remove('hidden');
+}
+
+init();
+</script>
+</body>
+</html>
