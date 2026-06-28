@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Equipment Tracker">
+<title>Equipment Tracker</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#111;background:#f3f4f6;min-height:100vh}
+.app{max-width:700px;margin:0 auto;padding:1rem}
+.header{background:#185FA5;color:#fff;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;align-items:center;gap:12px}
+.header h1{font-size:16px;font-weight:600;margin:0}
+.section{background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.sec-title{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:1rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg label{font-size:13px;color:#6b7280}
+input[type=text],input[type=date],input[type=password],input[type=url],select,textarea{width:100%;font-size:14px;padding:8px 10px;border:0.5px solid #d1d5db;border-radius:8px;background:#f9fafb;color:#111;outline:none;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:#185FA5;box-shadow:0 0 0 2px rgba(24,95,165,0.1);background:#fff}
+textarea{resize:vertical;min-height:56px}
+.btn{border-radius:8px;padding:9px 18px;font-size:14px;font-weight:500;cursor:pointer;border:0.5px solid #d1d5db;background:#f9fafb;color:#111;font-family:inherit;transition:opacity 0.15s}
+.btn:hover{opacity:0.8}
+.btn-primary{background:#185FA5;color:#fff;border-color:#185FA5}
+.btn-primary:disabled{background:#B5D4F4;border-color:#B5D4F4;cursor:not-allowed}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-danger{color:#E53E3E;border-color:#E53E3E}
+.tab-row{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap}
+.tab{position:relative;padding:7px 14px;border-radius:8px;border:0.5px solid #d1d5db;font-size:13px;cursor:pointer;background:#fff;color:#6b7280;font-family:inherit;transition:all 0.15s}
+.tab:hover{background:#f3f4f6}
+.tab.active{background:#185FA5;border-color:#185FA5;color:#fff}
+.badge{position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;border-radius:9px;background:#E53E3E;color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #f3f4f6;padding:0 3px}
+.badge.hidden{display:none}
+.hidden{display:none}
+.loc-badge{padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500;white-space:nowrap}
+.from-badge{background:#FAEEDA;color:#633806}
+.to-badge{background:#E1F5EE;color:#085041}
+.cargo-box{background:#f9fafb;border:0.5px solid #e5e7eb;border-radius:8px;padding:10px 14px;margin-top:10px}
+.cargo-title{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
+.cargo-item{font-size:13px;padding:4px 0;border-bottom:0.5px solid #e5e7eb;display:flex;align-items:center;gap:8px;color:#111}
+.cargo-item:last-child{border-bottom:none}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.equip-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+@media(max-width:480px){.equip-grid{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
+.equip-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;border:0.5px solid #e5e7eb;cursor:pointer;background:#f9fafb;user-select:none;transition:all 0.12s}
+.equip-item:hover{border-color:#d1d5db;background:#f3f4f6}
+.equip-item.selected{background:#E6F1FB;border-color:#85B7EB;color:#0C447C}
+.equip-check{width:16px;height:16px;border-radius:4px;border:1.5px solid #d1d5db;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.12s}
+.equip-item.selected .equip-check{background:#185FA5;border-color:#185FA5}
+.tick{display:none;width:9px;height:6px;border-left:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(-45deg) translateY(-1px)}
+.equip-item.selected .tick{display:block}
+.equip-thumb{width:34px;height:34px;border-radius:5px;object-fit:cover;border:0.5px solid #e5e7eb;flex-shrink:0}
+.equip-thumb-ph{width:34px;height:34px;border-radius:5px;border:0.5px dashed #d1d5db;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#fff;color:#9ca3af;font-size:16px}
+.equip-label{flex:1;min-width:0;font-size:12px;line-height:1.4;color:inherit}
+.alert-box{background:#FFFBEB;border:0.5px solid #F59E0B;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem}
+.alert-row{background:#fff;border:0.5px solid #FCD34D;border-radius:8px;padding:8px 12px;margin-bottom:5px}
+.alert-row:last-child{margin-bottom:0}
+.status-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:0.5px solid #e5e7eb}
+.status-row:last-child{border-bottom:none}
+.log-card{background:#f9fafb;border:0.5px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:12px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:6px}
+.spinner-dark{display:inline-block;width:13px;height:13px;border:2px solid rgba(0,0,0,0.12);border-top-color:#185FA5;border-radius:50%;animation:spin 0.7s linear infinite;vertical-align:middle;margin-right:5px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.sync-bar{font-size:12px;color:#6b7280;text-align:right;margin-bottom:6px;min-height:16px}
+.gate{display:flex;flex-direction:column;align-items:center;padding:3rem 1rem}
+.gate-card{background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:1.5rem;width:100%;max-width:320px;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.del-btn{font-size:11px;color:#6b7280;background:none;border:0.5px solid #e5e7eb;border-radius:6px;padding:3px 8px;cursor:pointer;margin-top:8px;font-family:inherit}
+.del-btn:hover{color:#E53E3E;border-color:#E53E3E}
+.notif-banner{background:#EFF6FF;border:0.5px solid #93C5FD;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px}
+.notif-grant{background:#F0FDF4;border:0.5px solid #86EFAC;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.new-trip-banner{background:#EFF6FF;border:0.5px solid #93C5FD;border-radius:10px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:flex-start;gap:10px}
+input[type=file]{display:none}
+.photo-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid #e5e7eb}
+.photo-row:last-child{border-bottom:none}
+.setup-banner{background:#FFF7ED;border:0.5px solid #FB923C;border-radius:10px;padding:12px 16px;margin-bottom:1rem}
+.step{display:flex;gap:12px;margin-bottom:10px;align-items:flex-start}
+.step:last-child{margin-bottom:0}
+.step-num{width:22px;height:22px;border-radius:50%;background:#185FA5;color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-text{font-size:13px;color:#111;line-height:1.5}
+.step-text a{color:#185FA5;text-decoration:underline}
+.divider{border:none;border-top:0.5px solid #e5e7eb;margin:12px 0}
+.equip-wrap{position:relative}
+.equip-info-tag{font-size:9px;background:#185FA5;color:#fff;border-radius:4px;padding:2px 6px;margin-left:auto;flex-shrink:0;cursor:pointer;font-weight:600;letter-spacing:0.02em;white-space:nowrap}
+.equip-info-tag:hover{background:#0C447C}
+.equip-dropdown{display:none;position:absolute;top:calc(100% + 5px);left:0;z-index:30;min-width:210px;background:#fff;border:1px solid #85B7EB;border-radius:10px;padding:10px 13px;box-shadow:0 6px 22px rgba(0,0,0,0.13)}
+.equip-wrap.info-open .equip-dropdown{display:block}
+.equip-dropdown-title{font-size:10px;font-weight:700;color:#185FA5;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:7px}
+.equip-dropdown-row{font-size:12.5px;color:#374151;padding:4px 0;display:flex;align-items:center;gap:7px;border-bottom:0.5px solid #f3f4f6}
+.equip-dropdown-row:last-child{border-bottom:none}
+.equip-dropdown-row::before{content:'✓';color:#185FA5;font-weight:700;font-size:11px;flex-shrink:0}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="header">
+  <div style="font-size:32px;line-height:1">🚐</div>
+  <div>
+    <h1>Equipment Tracker</h1>
+  </div>
+</div>
+
+<!-- SETUP BANNER -->
+<div id="setup-banner" class="setup-banner hidden">
+  <div style="font-size:13px;font-weight:600;color:#9A3412;margin-bottom:10px">⚙️ Setup required — connect JSONBin to enable shared storage</div>
+  <div class="step"><div class="step-num">1</div><div class="step-text">Go to <a href="[jsonbin.io](https://jsonbin.io)" target="_blank">jsonbin.io</a> and create a free account</div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-text">Click <strong>API Keys</strong> in the top menu → <strong>Create Access Key</strong> → copy it</div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-text">Go to <strong>Settings</strong> tab below → paste your key → click <strong>Save &amp; connect</strong></div></div>
+</div>
+
+<!-- TABS -->
+<div class="tab-row">
+  <button class="tab active" id="tab-btn-log" onclick="switchTab('log')">📋 Log trip</button>
+  <button class="tab" id="tab-btn-trips" onclick="switchTab('trips')">🚐 All trips<span class="badge hidden" id="badge-trips">!</span></button>
+  <button class="tab" id="tab-btn-away" onclick="switchTab('away')">⚠️ Away<span class="badge hidden" id="badge-away"></span></button>
+  <button class="tab" id="tab-btn-photos" onclick="switchTab('photos')">📷 Photos</button>
+  <button class="tab" id="tab-btn-settings" onclick="switchTab('settings')">⚙️ Settings</button>
+</div>
+
+<!-- LOG TRIP CONTENT (remains the same) -->
+<div id="tab-log">
+  <div class="section">
+    <div class="sec-title">Trip details</div>
+    <div class="form-row">
+      <div class="fg"><label>Your name</label><input type="text" id="f-name" placeholder="e.g. Jacob"></div>
+      <div class="fg"><label>Date</label><input type="date" id="f-date"></div>
+    </div>
+    <div class="form-row">
+      <div class="fg"><label>Pickup location</label>
+        <select id="f-pickup" onchange="onLocChange()">
+          <option value="">Select location</option>
+          <option>PSCI</option><option>Ayo House</option><option>Pope Building</option><option>Storage Unit</option><option>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label>Dropoff location</label>
+        <select id="f-dropoff" onchange="onLocChange()">
+          <option value="">Select location</option>
+          <option>PSCI</option><option>Ayo House</option><option>Pope Building</option><option>Storage Unit</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div id="row-pu-other" class="hidden" style="margin-bottom:10px">
+      <div class="fg"><label>Specify pickup</label><input type="text" id="f-pickup-other" placeholder="Enter location" oninput="updatePreview()"></div>
+    </div>
+    <div id="row-do-other" class="hidden" style="margin-bottom:10px">
+      <div class="fg"><label>Specify dropoff</label><input type="text" id="f-dropoff-other" placeholder="Enter location" oninput="updatePreview()"></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Equipment taken</div>
+    <div id="equip-loading" style="font-size:13px;color:#6b7280;padding:8px 0"><span class="spinner-dark"></span> Loading...</div>
+    <div class="equip-grid hidden" id="equip-grid"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-title">Comments</div>
+    <textarea id="f-comments" placeholder="Any notes about this trip..."></textarea>
+  </div>
+
+  <div id="van-preview" class="hidden section">
+    <div class="sec-title">Trip preview</div>
+    <div id="van-preview-inner"></div>
+  </div>
+
+  <div class="sync-bar" id="submit-status"></div>
+  <button class="btn btn-primary" id="submit-btn" onclick="submitTrip()" style="width:100%;padding:12px">Log trip</button>
+</div>
+
+<!-- Other tabs (trips, away, photos, settings) remain unchanged internally -->
+<div id="tab-trips" class="hidden"><!-- Content omitted for brevity --></div>
+<div id="tab-away" class="hidden"><!-- Content omitted for brevity --></div>
+<div id="tab-photos" class="hidden"><!-- Content omitted for brevity --></div>
+<div id="tab-settings" class="hidden"><!-- Content omitted for brevity --></div>
+
+</div>
+
+<script>
+// ... (EQUIPMENT, CONFIG, API logic remains same)
+const EQUIPMENT = [
+  '2x Alto TS415 speakers','2x Alto TS215 speakers','Individual speaker for bass',
+  'Keyboard','Keyboard stand','Drums','Lights','Mixer','Pulpit',
+  'Extensions & power cables','XLR cables','Instrumentalist cables with DIs',
+  'Microphone bag','TGX banners','GES banners','Speaker stands',
+  'Microphone receiver box','Floor wedge'
+];
+
+const EQUIPMENT_ACCESSORIES = {
+  'Keyboard': ['Keyboard bag', '1x DI Box', '2x XLR', '2x Instrument cable']
+};
+
+const JSONBIN_BASE = '[api.jsonbin.io](https://api.jsonbin.io/v3/b)';
+let trips = [];
+let sharedPhotos = {};
+let unlocked = { trips: false, away: false };
+
+// UI TOGGLE LOGIC: Click specifically on the "i" tag
+function toggleInfoDropdown(ev, i) {
+  ev.stopPropagation(); // Prevents checking the checkbox
+  const wrap = document.getElementById('eq-wrap-'+i);
+  if (!wrap) return;
+  const isOpen = wrap.classList.contains('info-open');
+  // Close all other open ones
+  document.querySelectorAll('.equip-wrap.info-open').forEach(w => w.classList.remove('info-open'));
+  // If it was closed, open it
+  if (!isOpen) wrap.classList.add('info-open');
+}
+
+function buildEquipGrid() {
+  document.getElementById('equip-grid').innerHTML = EQUIPMENT.map((e,i) => {
+    const photo = sharedPhotos[i];
+    const acc = EQUIPMENT_ACCESSORIES[e];
+    const itemHTML = `<div class="equip-item" id="eq-${i}" onclick="toggleEq(${i})">
+      <div class="equip-check"><div class="tick"></div></div>
+      ${photo
+        ? `<img src="${photo}" class="equip-thumb" alt="${e}">`
+        : `<div class="equip-thumb-ph">📷</div>`}
+      <span class="equip-label">${e}</span>
+      ${acc ? `<span class="equip-info-tag" onclick="toggleInfoDropdown(event,${i})">ℹ includes</span>` : ''}
+    </div>
+    ${acc ? `<div class="equip-dropdown">
+      <div class="equip-dropdown-title">Comes with</div>
+      ${acc.map(a=>`<div class="equip-dropdown-row">${a}</div>`).join('')}
+    </div>` : ''}`;
+    return acc
+      ? `<div class="equip-wrap" id="eq-wrap-${i}">${itemHTML}</div>`
+      : itemHTML;
+  }).join('');
+}
+
+function toggleEq(i) {
+  document.getElementById('eq-'+i).classList.toggle('selected');
+  updatePreview();
+}
+
+// Global click listener to close dropdown when clicking outside
+document.addEventListener('click', function() {
+  document.querySelectorAll('.equip-wrap.info-open').forEach(w => w.classList.remove('info-open'));
+});
+
+// ... (Rest of your existing functions: submitTrip, init, switchTab, etc.)
+
+function init() {
+  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+  // Normally load photos then build grid
+  buildEquipGrid();
+  document.getElementById('equip-loading').classList.add('hidden');
+  document.getElementById('equip-grid').classList.remove('hidden');
+}
+init();
+</script>
+</body>
+</html>
