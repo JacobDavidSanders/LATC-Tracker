@@ -697,7 +697,7 @@ async function publishInfoBin(ib){
 // exist until the first person enables notifications. Whichever device creates it publishes
 // the id into the shared Trips bin (under 'pushSubsBin') so every other device — and the
 // Cloudflare Function that actually sends the pushes — can find the same bin.
-const VAPID_PUBLIC_KEY = 'BMbL4nL50g6k8IluYHlvNIeS7XAJMMeOTbXH-UtMNy3KMOrBtEmShVScFo7qWWIcDGBGZLgoTWN8j1dK0t28Dc0';
+const VAPID_PUBLIC_KEY = 'BI2w3UVUXPrGIrnkboaKnTXsL2bzbm7S6Z-EAHQGgUP2w0g0ZrbBKM6WL3dDJcm9pXOkAomstcwUAn_cM5BKI94';
 function urlBase64ToUint8Array(base64String){
   const padding='='.repeat((4-base64String.length%4)%4);
   const base64=(base64String+padding).replace(/-/g,'+').replace(/_/g,'/');
