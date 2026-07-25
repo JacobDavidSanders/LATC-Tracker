@@ -755,6 +755,19 @@ async function updateNotifButtonState(){
   if(sub){ btn.classList.add('enabled'); btn.title='Trip reminders are ON for this device (tap to turn off)'; }
   else { btn.classList.remove('enabled'); btn.title='Enable trip reminders on this device'; }
 }
+  async function debugPushInfo(){
+  try{
+    const s=await currentPushSubscription().catch(()=>null);
+    const subs=await loadPushSubs().catch(e=>({error:e.message}));
+    const mine=currentUser?subs[currentUser.username]:null;
+    alert('User: '+(currentUser?currentUser.username:'none')
+      +'\nLocal subscription: '+(s?('YES, ends in ...'+s.endpoint.slice(-24)):'NO')
+      +'\nAll saved accounts: '+Object.keys(subs).join(', ')
+      +'\nThis account\'s entries: '+JSON.stringify(mine));
+  }catch(e){ alert('ERROR: '+e.message); }
+}
+
+async function toggleNotifications(){
 async function toggleNotifications(){
   const btn=document.getElementById('notif-btn');
   if(!('Notification' in window)||!('serviceWorker' in navigator)||!('PushManager' in window)){
