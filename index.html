@@ -768,7 +768,6 @@ async function updateNotifButtonState(){
 }
 
 async function toggleNotifications(){
-async function toggleNotifications(){
   const btn=document.getElementById('notif-btn');
   if(!('Notification' in window)||!('serviceWorker' in navigator)||!('PushManager' in window)){
     alert('Notifications are not supported in this browser. On iPhone, add this app to your Home Screen first (Share > Add to Home Screen), then try again from there.');
