@@ -1485,7 +1485,7 @@ async function saveTrips(){
     return String(b.id).localeCompare(String(a.id));
   });
   trips=merged;
-  await jbSet(getTripsBin(),{trips:merged,password:getPassword(),home:getHome(),confirmedAway,equipment:EQUIPMENT,locations:LOCATIONS,events});
+  await jbSet(getTripsBin(),{...rec,trips:merged,password:getPassword(),home:getHome(),confirmedAway,equipment:EQUIPMENT,locations:LOCATIONS,events});
 }
 async function deleteTripRemote(id){
   let existing=[];
@@ -1496,7 +1496,7 @@ async function deleteTripRemote(id){
     if(db!==da)return db.localeCompare(da);
     return String(b.id).localeCompare(String(a.id));
   });
-  await jbSet(getTripsBin(),{trips:filtered,password:getPassword(),home:getHome(),confirmedAway,equipment:EQUIPMENT,locations:LOCATIONS,events});
+  await jbSet(getTripsBin(),{...rec,trips:filtered,password:getPassword(),home:getHome(),confirmedAway,equipment:EQUIPMENT,locations:LOCATIONS,events});
 }
 async function updateTripRemote(updatedTrip){
   let existing=[];
@@ -1507,7 +1507,7 @@ async function updateTripRemote(updatedTrip){
     return String(b.id).localeCompare(String(a.id));
   });
   trips=merged;
-  await jbSet(getTripsBin(),{trips:merged,password:getPassword(),home:getHome(),confirmedAway,equipment:EQUIPMENT,locations:LOCATIONS,events});
+  await jbSet(getTripsBin(),{...rec,trips:merged,password:getPassword(),home:getHome(),confirmedAway,equipment:EQUIPMENT,locations:LOCATIONS,events});
 }
 
 // ─── PHOTOS ───────────────────────────────────────────────────────────────────
