@@ -330,7 +330,31 @@ input[type=file]{display:none}
   <div><h1>Equipment Tracker</h1></div>
   <div class="header-user">
     <button class="notif-btn" id="notif-btn" onclick="toggleNotifications()" title="Enable trip reminders on this device">&#128276;</button>
-    <button onclick="debugPushInfo()" style="margin-left:8px;">🐞</button>
+   async function debugPushInfo(){
+  let box=document.getElementById('debug-box');
+  if(!box){
+    box=document.createElement('div');
+    box.id='debug-box';
+    box.style='position:fixed;top:50%;left:10px;right:10px;transform:translateY(-50%);background:#000;color:#0f0;padding:12px;font-size:12px;z-index:2147483647;border-radius:8px;word-break:break-all;';
+    document.body.appendChild(box);
+  }
+  box.innerHTML='Running...<br><br><button onclick="this.parentElement.remove()">close</button>';
+  const withTimeout=(p,ms,label)=>Promise.race([
+    p,
+    new Promise((_,rej)=>setTimeout(()=>rej(new Error(label+' timed out after '+ms+'ms')),ms))
+  ]);
+  let out;
+  try{
+    const s=await withTimeout(currentPushSubscription(),4000,'currentPushSubscription').catch(e=>({__err:e.message}));
+    const subs=await withTimeout(loadPushSubs(),4000,'loadPushSubs').catch(e=>({__err:e.message}));
+    const mine=(currentUser&&subs&&!subs.__err)?subs[currentUser.username]:null;
+    out='User: '+(currentUser?currentUser.username:'none')
+      +'<br>Subscription: '+(s&&s.__err?('ERROR: '+s.__err):(s?('YES, ends in ...'+s.endpoint.slice(-24)):'NO'))
+      +'<br>Subs data: '+(subs&&subs.__err?('ERROR: '+subs.__err):('accounts: '+Object.keys(subs).join(', ')))
+      +'<br>Mine: '+JSON.stringify(mine);
+  }catch(e){ out='ERROR: '+e.message; }
+  box.innerHTML=out+'<br><br><button onclick="this.parentElement.remove()">close</button>';
+}
     <span class="header-username" id="header-username"></span>
     <button class="header-logout" onclick="logout()">Log out</button>
   </div>
