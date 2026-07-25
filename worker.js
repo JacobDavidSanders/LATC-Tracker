@@ -1,21 +1,31 @@
+import webpush from 'web-push';
+
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url);
+
+    if (request.method === 'POST' && url.pathname === '/send-push') {
+      return handleSendPush(request, env);
+    }
+
+    // Everything else (index.html, sw.js, manifest.json, icons) is served as a
+    // plain static file straight from the assets binding.
+    return env.ASSETS.fetch(request);
+  },
+};
+
 // POST /send-push
 // body: { subscriptions: [{endpoint, keys:{p256dh,auth}}, ...], title, body }
 // This is the ONLY server-side piece this app needs. It never touches JSONBin or
 // knows about users/trust levels — the browser already resolved which subscriptions
 // to target and just hands them over here to be delivered. That keeps the VAPID
-// private key (the one genuinely secret value) isolated to this one file.
+// private key (the one genuinely secret value) isolated to this one route.
 //
-// Requires, in the Cloudflare Pages project settings:
-//   - Compatibility flag: nodejs_compat
-//   - Environment variables (set as "Secret" for VAPID_PRIVATE_KEY):
-//       VAPID_PUBLIC_KEY  = (the public key from `npx web-push generate-vapid-keys`)
-//       VAPID_PRIVATE_KEY = (the private key — keep this secret)
-//       VAPID_SUBJECT     = mailto:you@example.com  (or your site's https:// URL)
-// Requires, in package.json at the project root: "web-push" as a dependency.
-
-import webpush from 'web-push';
-
-export async function onRequestPost({ request, env }) {
+// Requires, in the Cloudflare dashboard for this Worker (Settings > Variables and Secrets):
+//   VAPID_PUBLIC_KEY  = (the public key from `npx web-push generate-vapid-keys`)
+//   VAPID_PRIVATE_KEY = (the private key — add this one as a Secret)
+//   VAPID_SUBJECT     = mailto:you@example.com  (or your site's https:// URL)
+async function handleSendPush(request, env) {
   let body;
   try {
     body = await request.json();
