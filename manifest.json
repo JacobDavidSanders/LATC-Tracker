@@ -1,6 +1,6 @@
 {
   "name": "Equipment Tracker",
-  "short_name": "Equip Tracker",
+  "short_name": "Equipment Tracker",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f3f4f6",
