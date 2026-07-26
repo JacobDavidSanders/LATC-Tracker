@@ -1,0 +1,20 @@
+{
+  "name": "tracker",
+  "compatibility_date": "2026-07-25",
+  "compatibility_flags": ["nodejs_compat"],
+  "main": "worker.js",
+  "observability": {
+    "enabled": true
+  },
+  "assets": {
+    "directory": "./",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "APP_KV",
+      "id": "48a9e9155c2942d3ac3d2a5dd277cf5d"
+    }
+  ]
+}
