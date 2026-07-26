@@ -825,6 +825,7 @@ async function sendReminderPush(usernames, title, body){
   });
   if(!res.ok) throw new Error('Server responded '+res.status);
   const data=await res.json();
+  alert(JSON.stringify(data.results, null, 2));
   // Prune subscriptions the push service says are dead (expired/unsubscribed elsewhere).
   const dead=new Set((data.results||[]).filter(r=>!r.ok&&(r.status===404||r.status===410)).map(r=>r.endpoint));
   if(dead.size){
